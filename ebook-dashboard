@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>eBook Dashboard with Auth</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at top left, #1a1a2e, #0f0c29 80%);
+      color: #e0e0e0; min-height: 100vh; overflow-x: hidden;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    .ghost-img, .cracker-img {
+      position: absolute; width: 300px; top: 20%; z-index: 3;
+      animation: float 3s ease-in-out infinite;
+    }
+    ..ghost-img {
+  position: absolute;
+  top: -40px;
+  left: 90%;
+  transform: translateX(-50%);
+  width: 50%;
+  animation: float 3s ease-in-out infinite;
+}
+    .cracker-img { right: 65%; }
+    .hidden { display: none; }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .container, .dashboard-wrapper {
+      width: 90%; max-width: 1200px; margin: 3rem auto;
+      background: rgba(255,255,255,0.05); backdrop-filter: blur(15px);
+      border-radius: 16px; box-shadow: 0 0 20px rgba(0,255,255,0.2);
+      padding: 2rem; position: relative; z-index: 10;
+    }
+
+    .auth-forms { max-width: 360px; margin: auto; }
+    .auth-forms h2 { text-align: center; color: #00ffe7; margin-bottom: 1.5rem; }
+    .auth-forms input {
+      width: 100%; padding: 0.6rem; margin: 0.5rem 0;
+      border-radius:8px; border:none; outline:none;
+      background: rgba(255,255,255,0.1); color:#fff;
+    }
+    .auth-forms .input-wrapper {
+      position: relative;
+    }
+    .auth-forms .input-wrapper i {
+      position: absolute; right: 10px; top: 50%;
+      transform: translateY(-50%); cursor: pointer; color: #ccc;
+    }
+    .auth-forms .btn {
+      width:100%; padding:0.6rem; margin-top:1rem;
+      background:#00ffff; color:#000; border:none; border-radius:8px;
+      font-weight:bold; cursor:pointer; box-shadow:0 0 10px #00ffff;
+    }
+    .auth-forms .btn:hover { background:#00cccc; }
+    .auth-forms .links {
+      display:flex; justify-content:space-between;
+      font-size:0.85rem; margin-top:1rem;
+    }
+    .auth-forms .links a { color:#00ffff; cursor:pointer; }
+
+    header {
+      display:flex; align-items:center; justify-content:space-between;
+      backdrop-filter:blur(10px); background:rgba(30,30,47,0.5);
+      padding:1rem 2rem; border-radius:12px;
+    }
+    header h1 {
+      font-size:1.75rem; color:#00ffe7;
+      text-shadow:0 0 8px rgba(0,255,231,0.7);
+    }
+    .nav-icons { display:flex; gap:1rem; }
+    .nav-icons i {
+      font-size:1.25rem; cursor:pointer;
+    }
+    .search-bar {
+      flex:1; max-width:300px; position:relative; margin:0 2rem;
+    }
+    .search-bar input {
+      width:100%; padding:0.6rem 2.5rem;
+      border-radius:50px; border:none;
+      background:rgba(255,255,255,0.1); color:#fff;
+    }
+    .search-bar i {
+      position:absolute; top:50%; left:1rem;
+      transform:translateY(-50%); color:#ccc;
+    }
+    .profile {
+      display:flex; align-items:center; gap:1rem;
+    }
+    .profile img {
+      width:44px; height:44px; border-radius:50%;
+      border:2px solid #00ffe7;
+    }
+    .profile .info small { color:#aaa; font-size:0.8rem; }
+
+    .books {
+      display:flex; gap:1.5rem; overflow-x:auto; padding-bottom:0.5rem;
+    }
+    .books::-webkit-scrollbar { height:6px; }
+    .books::-webkit-scrollbar-thumb {
+      background:#00ffe7; border-radius:3px;
+    }
+    .book {
+      flex:0 0 auto; width:160px; border-radius:15px;
+      background:rgba(255,255,255,0.05); backdrop-filter:blur(8px);
+      box-shadow:0 8px 16px rgba(0,0,0,0.5),0 0 10px rgba(0,255,231,0.3);
+      transition:.3s; overflow:hidden;
+    }
+    .book img { width:100%; height:220px; object-fit:cover; }
+    .details { text-align:center; padding:.75rem; }
+    .title { font-weight:600; font-size:.95rem; }
+    .author { font-size:.8rem; color:#bbb; }
+
+    .interpreter {
+      margin-top:2rem; background:rgba(255,255,255,0.05);
+      backdrop-filter:blur(6px); padding:1.5rem; border-radius:12px;
+      box-shadow:0 0 15px rgba(0,255,231,0.2);
+    }
+
+    footer { text-align:center; margin-top:2rem; color:#777; font-size:.8rem; }
+  </style>
+</head>
+<body>
+
+  <img src="https://preview.redd.it/i-decided-to-do-a-transparent-background-of-these-mark-85-v0-49h3iaccfkt81.png?width=640&crop=smart&auto=webp&s=eaab0419d73bc89645d055a3267ebf7a6f9a2a30" class="ghost-img" id="ghostImg" alt="ghost">
+  <img src="https://static.vecteezy.com/system/resources/thumbnails/050/817/284/small/male-writer-in-literary-setting-a-male-writer-is-sitting-while-operating-a-laptop-on-his-lap-3d-character-png.png" class="cracker-img hidden" id="crackerImg" alt="cracker">
+
+  <div class="container auth-forms" id="authContainer">
+    <div id="loginForm">
+      <h2>LOGIN</h2>
+      <input id="loginUser" type="text" placeholder="Username" />
+      <div class="input-wrapper">
+        <input id="loginPass" type="password" placeholder="Password" />
+        <i class="fas fa-eye" onclick="toggleVisibility('loginPass', this)"></i>
+      </div>
+      <button class="btn" onclick="handleLogin()">SUBMIT</button>
+      <div class="links">
+        <a onclick="showRegister()">REGISTER</a>
+        <a href="#">FORGOT PASSWORD</a>
+      </div>
+    </div>
+    <div id="registerForm" class="hidden">
+      <h2>REGISTER</h2>
+      <input id="regName" type="text" placeholder="Full Name" />
+      <input id="regUser" type="text" placeholder="Username" />
+      <div class="input-wrapper">
+        <input id="regPass" type="password" placeholder="Password" />
+        <i class="fas fa-eye" onclick="toggleVisibility('regPass', this)"></i>
+      </div>
+      <input id="regPass2" type="password" placeholder="Confirm Password" />
+      <button class="btn" onclick="handleRegister()">REGISTER</button>
+      <div class="links">
+        <a onclick="showLogin()">LOGIN</a>
+        <a href="#">FORGOT PASSWORD</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-wrapper hidden" id="dashboard">
+    <header>
+      <h1>📚 Keep the Story Going</h1>
+      <div class="nav-icons">
+        <i class="fas fa-home"></i>
+        <i class="fas fa-book"></i>
+        <i class="fas fa-bell"></i>
+        <i class="fas fa-sign-out-alt" onclick="handleLogout()" title="Logout"></i>
+      </div>
+      <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search eBooks…">
+      </div>
+      <div class="profile">
+        <img src="https://i.pravatar.cc/44?img=1" alt="Avatar" />
+        <div class="info">
+          <strong id="userDisplay"></strong>
+          <small>@<span id="userHandle"></span></small>
+        </div>
+      </div>
+    </header>
+
+    <div class="books">
+      <div class="book">
+        <a href="https://bugs.python.org/file47781/Tutorial_EDIT.pdf" target="_blank">
+          <img src="https://www.fita.in/includes/assets/img/python/Python-banner.jpg" alt="">
+        </a>
+        <div class="details"><div class="title">Python Tutorial</div><div class="author">Guido van Rossum</div></div>
+      </div>
+      <div class="book">
+        <a href="https://cfm.ehu.es/ricardo/docs/python/Learning_Python.pdf" target="_blank">
+          <img src="https://media.s-bol.com/kk4EB0ql9OZX/n5WYLQY/118x155.jpg" alt="">
+        </a>
+        <div class="details"><div class="title">Learn Python</div><div class="author">Mark Lutz</div></div>
+      </div>
+      <div class="book">
+        <a href="https://assets.openstax.org/oscms-prodcms/media/documents/Introduction_to_Python_Programming_-_WEB.pdf" target="_blank">
+          <img src="https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSmET0DL1g4FG4-xvnCIDhsavCs_7valtvdmOrNZ8i9CYDamupA" alt="">
+        </a>
+        <div class="details"><div class="title">Python Programming</div><div class="author">OpenStax</div></div>
+      </div>
+    </div>
+    
+
+    <div class="interpreter">
+      <h2>Try Python Online</h2>
+      <iframe src="https://www.onlinegdb.com/online_python_compiler" width="100%" height="500" frameborder="0" allowfullscreen></iframe>
+    </div>
+
+    <footer>&copy; 2025 Nebula Reads • Crafted with 💜 and neon dreams</footer>
+  </div>
+
+  <script>
+    const loginForm     = document.getElementById('loginForm');
+    const registerForm  = document.getElementById('registerForm');
+    const authContainer = document.getElementById('authContainer');
+    const dashboard     = document.getElementById('dashboard');
+    const ghostImg      = document.getElementById('ghostImg');
+    const crackerImg    = document.getElementById('crackerImg');
+    const userDisplay   = document.getElementById('userDisplay');
+    const userHandle    = document.getElementById('userHandle');
+
+    function showRegister(){
+      loginForm.classList.add('hidden');
+      registerForm.classList.remove('hidden');
+      ghostImg.classList.add('hidden');
+      crackerImg.classList.remove('hidden');
+    }
+    function showLogin(){
+      registerForm.classList.add('hidden');
+      loginForm.classList.remove('hidden');
+      crackerImg.classList.add('hidden');
+      ghostImg.classList.remove('hidden');
+    }
+    window.onload = () => {
+      const loggedIn = localStorage.getItem('loggedIn');
+      if(loggedIn === 'true'){
+        const user = JSON.parse(localStorage.getItem('user'));
+        displayDashboard(user);
+      }
+    };
+    function handleRegister(){
+      const name   = document.getElementById('regName').value.trim();
+      const user   = document.getElementById('regUser').value.trim();
+      const pass   = document.getElementById('regPass').value;
+      const pass2  = document.getElementById('regPass2').value;
+      if(!name || !user || !pass || !pass2){ return alert('All fields required'); }
+      if(pass !== pass2){ return alert('Passwords do not match'); }
+      if(pass.length < 5){ return alert('Password too short'); }
+      if(localStorage.getItem('user')){
+        const existing = JSON.parse(localStorage.getItem('user'));
+        if(existing.user === user){ return alert('User already registered'); }
+      }
+      const userObj = { name, user, pass };
+      localStorage.setItem('user', JSON.stringify(userObj));
+      localStorage.setItem('loggedIn', 'true');
+      displayDashboard(userObj);
+    }
+    function handleLogin(){
+      const user = document.getElementById('loginUser').value.trim();
+      const pass = document.getElementById('loginPass').value;
+      const stored = JSON.parse(localStorage.getItem('user') || '{}');
+      if(user === stored.user && pass === stored.pass){
+        localStorage.setItem('loggedIn','true');
+        displayDashboard(stored);
+      } else {
+        alert('Invalid credentials');
+      }
+    }
+    function handleLogout(){
+      localStorage.removeItem('loggedIn');
+      location.reload();
+    }
+    function displayDashboard(user){
+      authContainer.classList.add('hidden');
+      dashboard.classList.remove('hidden');
+      ghostImg.classList.add('hidden');
+      crackerImg.classList.add('hidden');
+      userDisplay.textContent = user.name;
+      userHandle.textContent  = user.user;
+    }
+    function toggleVisibility(id, icon){
+      const input = document.getElementById(id);
+      if(input.type === 'password'){
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+  </script>
+</body>
+</html>
